@@ -1,0 +1,33 @@
+name: Scraping CENACE demanda
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Ejecuta cada hora (minuto 0)
+  workflow_dispatch:  # Permite ejecutarlo manualmente también
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install playwright
+        playwright install chromium
+
+    - name: Run scraping script
+      run: python scraping_demanda.py
+
+    - name: Upload demanda_log.csv artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: demanda_log
+        path: demanda_log.csv
