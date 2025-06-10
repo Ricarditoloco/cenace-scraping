@@ -2,8 +2,8 @@ name: Scraping CENACE demanda
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Ejecuta cada hora (minuto 0)
-  workflow_dispatch:  # Permite ejecutarlo manualmente también
+    - cron: '0,30 * * * *'  # Ejecuta cada media hora
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -26,8 +26,18 @@ jobs:
     - name: Run scraping script
       run: python scraping_demanda.py
 
-    - name: Upload demanda_log.csv artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: demanda_log
-        path: demanda_log.csv
+    - name: Configure git for push
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Commit and push changes
+      run: |
+        git add demanda_log.csv
+        # Solo hace commit si hay cambios
+        git diff --cached --quiet || git commit -m "Actualización automática de demanda"
+        git push
+      env:
+        # TOKEN automático para permitir push sin problemas
+        # Este token ya está disponible en GitHub Actions en 'secrets.GITHUB_TOKEN'
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
